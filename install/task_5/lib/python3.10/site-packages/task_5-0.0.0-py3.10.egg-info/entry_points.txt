@@ -1,3 +1,0 @@
-[console_scripts]
-image_publisher = task_5.image_publisher:main
-
