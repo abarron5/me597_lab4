@@ -25,16 +25,22 @@ class RedBallTracker(Node):
         self.bridge = CvBridge()
 
         # PID controller parameters
-        self.kp_ang = 0.001    # proportional gain for angular velocity
-        self.kd_ang = 0.004
-        self.kp_lin = 0.0008    # proportional gain for linear velocity
-        self.kd_lin = 0.002
+        self.kp_ang = 0.0005    # proportional gain for angular velocity
+        self.kd_ang = 0.000
+        self.kp_lin = 0.00008    # proportional gain for linear velocity
+        self.kd_lin = 0.000
 
         self.prev_error_x = 0
         self.prev_error_area = 0
 
         self.target_area = 50000  # desired area of red ball (tuned experimentally)
         self.last_time = time.time()
+
+        # filtering parameters
+        self.filtered_error_x = 0.0
+        self.filtered_error_area = 0.0
+        self.alpha = 0.2   # smoothing factor (0 = heavy smoothing, 1 = no smoothing)
+
 
         self.get_logger().info('Red Ball Tracker Node started...')
 
@@ -81,11 +87,24 @@ class RedBallTracker(Node):
 
                 # --- PID Control ---
                 error_x = center_x - cx
-                if abs(error_x) < 20:
-                    error_x = 0
-
                 error_area = self.target_area - area
-                if abs(error_area) < self.target_area * 0.2:
+
+                # filter error
+                self.filtered_error_x = (
+                    self.alpha * error_x + (1 - self.alpha) * self.filtered_error_x
+                )
+                self.filtered_error_area = (
+                    self.alpha * error_area + (1 - self.alpha) * self.filtered_error_area
+                )
+
+                # use filtered versions for control
+                error_x = self.filtered_error_x
+                error_area = self.filtered_error_area
+
+                # set error to 0 within specified margins
+                if abs(error_x) < 30:
+                    error_x = 0
+                if abs(error_area) < self.target_area * 0.3:
                     error_area = 0
 
                 current_time = time.time()
@@ -93,11 +112,13 @@ class RedBallTracker(Node):
                 derivative_x = (error_x - self.prev_error_x) / dt if dt > 0 else 0.0
                 derivative_area = (error_x - self.prev_error_x) / dt if dt > 0 else 0.0
 
-                vel.linear.x = self.kp_lin * error_area + self.kd_lin * derivative_area    # move forward/backward
                 vel.angular.z = self.kp_ang * error_x + self.kd_ang * derivative_x
+                vel.linear.x = self.kp_lin * error_area + self.kd_lin * derivative_area    # move forward/backward
 
-                if abs(vel.angular.z) > 0.1:
-                    vel.linear.x *= 0.5
+                # smooth turning
+                turn_factor = max(0.3, 1.0 - abs(vel.angular.z) * 3.0)
+                vel.linear.x *= turn_factor
+
 
                 # Clamp velocities
                 vel.linear.x = np.clip(vel.linear.x, -0.25, 0.25)
