@@ -47,6 +47,7 @@ class RedBallTracker(Node):
     def listener_callback(self, msg: Image):
         # Convert ROS Image → OpenCV image
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+        # Find center of frame
         height, width, _ = frame.shape
         center_x = width // 2
 
@@ -76,7 +77,7 @@ class RedBallTracker(Node):
             c = max(contours, key=cv.contourArea)
             area = cv.contourArea(c)
 
-            if area > 300:  # filter noise
+            if area > 300:
                 x, y, w, h = cv.boundingRect(c)
                 cx = int(x + w / 2)
                 cy = int(y + h / 2)
@@ -118,7 +119,6 @@ class RedBallTracker(Node):
                 # smooth turning
                 turn_factor = max(0.3, 1.0 - abs(vel.angular.z) * 3.0)
                 vel.linear.x *= turn_factor
-
 
                 # Clamp velocities
                 vel.linear.x = np.clip(vel.linear.x, -0.25, 0.25)
