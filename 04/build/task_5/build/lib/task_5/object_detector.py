@@ -12,9 +12,6 @@ class ObjectDetector(Node):
         super().__init__('object_detector')
 
         self.subscriber_ = self.create_subscription(Image, '/video_data', self.listener_callback, 10)
-        #self.subscriber_  # prevent unused variable warning
-
-        # Publisher for bounding box information
         self.publisher_ = self.create_publisher(BoundingBox2D, '/bbox', 10)
 
         # Bridge between ROS Image msg and OpenCV
@@ -26,45 +23,50 @@ class ObjectDetector(Node):
         # Convert ROS Image to OpenCV image
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
 
-        # -----------------------------------------------------
-        # 1️⃣ Simple detection logic (color segmentation)
-        #    Here we look for a bright colored object (e.g., red)
-        # -----------------------------------------------------
+        # Use BGR image to HSV image
+        # hsv = [hue, saturation, brightness]
         hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
-        # Define color range for detection (tune as needed)
-        lower = np.array([0, 120, 70])
-        upper = np.array([10, 255, 255])
+        # Red hue 0-10
+        lower = np.array([0, 120, 130]) # 0, 120, 70
+        upper = np.array([10, 255, 255]) #10, 255, 255
         mask1 = cv.inRange(hsv, lower, upper)
 
-        # for red hue wraparound (170-180)
-        lower = np.array([170, 120, 70])
+        # Red hue 170-180
+        lower = np.array([170, 120, 130])
         upper = np.array([180, 255, 255])
         mask2 = cv.inRange(hsv, lower, upper)
 
         mask = mask1 | mask2
 
-        # Clean up mask
+        # Remove noise and fill gaps
         mask = cv.morphologyEx(mask, cv.MORPH_OPEN, np.ones((5, 5), np.uint8))
         mask = cv.morphologyEx(mask, cv.MORPH_DILATE, np.ones((5, 5), np.uint8))
 
-        # -----------------------------------------------------
-        # 2️⃣ Find contours
-        # -----------------------------------------------------
+        # Find contours
         contours, _ = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
-        if len(contours) > 0:
-            # Choose the largest contour as the detected object
-            c = max(contours, key=cv.contourArea)
+        # Look for the triangular shape above a size threshold 
+        triangles = []
+        for c in contours:
+            area = cv.contourArea(c)
+            if area < 300:
+                continue
+
+            peri = cv.arcLength(c, True)
+            approx = cv.approxPolyDP(c, 0.04 * peri, True)
+
+            if len(approx) == 3:
+                triangles.append(c)
+
+        if len(triangles) > 0:
+            c = max(triangles, key=cv.contourArea)
             x, y, w, h = cv.boundingRect(c)
+            cx = int(x + w/2)
+            cy = int(y + h/2)
 
-            # Compute centroid
-            cx = int(x + w / 2)
-            cy = int(y + h / 2)
 
-            # -------------------------------------------------
-            # 3️⃣ Publish bounding box info
-            # -------------------------------------------------
+            # Publish bounding box info
             bbox_msg = BoundingBox2D()
             bbox_msg.center.position.x = float(cx)
             bbox_msg.center.position.y = float(cy)
@@ -75,19 +77,13 @@ class ObjectDetector(Node):
             # Print details
             self.get_logger().info(f"Centroid: ({cx}, {cy}) | Size: ({w}, {h})")
 
-            # -------------------------------------------------
-            # 4️⃣ Draw bounding box on frame
-            # -------------------------------------------------
+            # Draw bounding box
             cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv.circle(frame, (cx, cy), 5, (255, 0, 0), -1)
-            cv.putText(frame, f"({cx},{cy})", (x, y - 10),
-                       cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+            
         else:
             self.get_logger().info("No object detected.")
 
-        # -----------------------------------------------------
-        # 5️⃣ Show the processed frame
-        # -----------------------------------------------------
+        # Display edited video with bounding box
         cv.imshow('Detected Object', frame)
         if cv.waitKey(1) & 0xFF == ord('q'):
             cv.destroyAllWindows()

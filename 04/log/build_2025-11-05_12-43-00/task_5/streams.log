@@ -1,0 +1,26 @@
+[0.678s] Invoking command in '/home/me597/ME597/me597_lab4/04/task_5': PYTHONPATH=/home/me597/ME597/me597_lab4/04/build/task_5/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/me597/ME597/me597_lab4/04/install/task_5/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/task_5 build --build-base /home/me597/ME597/me597_lab4/04/build/task_5/build install --record /home/me597/ME597/me597_lab4/04/build/task_5/install.log --single-version-externally-managed install_data
+[0.838s] running egg_info
+[0.839s] writing ../build/task_5/task_5.egg-info/PKG-INFO
+[0.840s] writing dependency_links to ../build/task_5/task_5.egg-info/dependency_links.txt
+[0.840s] writing entry points to ../build/task_5/task_5.egg-info/entry_points.txt
+[0.840s] writing requirements to ../build/task_5/task_5.egg-info/requires.txt
+[0.840s] writing top-level names to ../build/task_5/task_5.egg-info/top_level.txt
+[0.842s] reading manifest file '../build/task_5/task_5.egg-info/SOURCES.txt'
+[0.842s] adding license file 'LICENSE'
+[0.843s] writing manifest file '../build/task_5/task_5.egg-info/SOURCES.txt'
+[0.844s] running build
+[0.844s] running build_py
+[0.844s] copying task_5/image_publisher.py -> /home/me597/ME597/me597_lab4/04/build/task_5/build/lib/task_5
+[0.844s] running install
+[0.844s] running install_lib
+[0.844s] copying /home/me597/ME597/me597_lab4/04/build/task_5/build/lib/task_5/image_publisher.py -> /home/me597/ME597/me597_lab4/04/install/task_5/lib/python3.10/site-packages/task_5
+[0.847s] byte-compiling /home/me597/ME597/me597_lab4/04/install/task_5/lib/python3.10/site-packages/task_5/image_publisher.py to image_publisher.cpython-310.pyc
+[0.848s] running install_data
+[0.848s] running install_egg_info
+[0.850s] removing '/home/me597/ME597/me597_lab4/04/install/task_5/lib/python3.10/site-packages/task_5-0.0.0-py3.10.egg-info' (and everything under it)
+[0.850s] Copying ../build/task_5/task_5.egg-info to /home/me597/ME597/me597_lab4/04/install/task_5/lib/python3.10/site-packages/task_5-0.0.0-py3.10.egg-info
+[0.850s] running install_scripts
+[0.868s] Installing image_publisher script to /home/me597/ME597/me597_lab4/04/install/task_5/lib/task_5
+[0.868s] Installing object_detector script to /home/me597/ME597/me597_lab4/04/install/task_5/lib/task_5
+[0.869s] writing list of installed files to '/home/me597/ME597/me597_lab4/04/build/task_5/install.log'
+[0.911s] Invoked command in '/home/me597/ME597/me597_lab4/04/task_5' returned '0': PYTHONPATH=/home/me597/ME597/me597_lab4/04/build/task_5/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/me597/ME597/me597_lab4/04/install/task_5/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/task_5 build --build-base /home/me597/ME597/me597_lab4/04/build/task_5/build install --record /home/me597/ME597/me597_lab4/04/build/task_5/install.log --single-version-externally-managed install_data
